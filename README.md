@@ -1,416 +1,366 @@
 # AI-Powered Website Link Analysis API
 
-> **Submission README** — Python Practical Test (FastAPI + LLM)
-> Maximum duration: 2 hours · Submission deadline: 27 November 2026 · Submission: public GitHub repository + deployed live demo
+FastAPI service that analyzes a public website URL and returns structured business intelligence across competitor, search-query, SEO, service, and target-audience insights. The analysis is grounded in extracted website content and validated against a strict JSON schema.
 
-| Details | Information |
+## Quick Links
+
+| Resource | Link |
 |---|---|
-| **Technology** | Python 3.x, FastAPI, Uvicorn, Pydantic, HTTPX, BeautifulSoup |
-| **AI Integration** | Google Gemini 3.5 Flash-Lite (primary) · OpenAI GPT-5 mini (fallback) |
-| **Local Endpoint** | `POST http://localhost:4000/link-analysis` |
-| **Local API Docs** | `http://localhost:4000/docs` |
-| **Live Demo** | `https://ai-link-analysis-l0mt.onrender.com` |
-| **Live API Endpoint** | `POST https://ai-link-analysis-l0mt.onrender.com/link-analysis` |
-| **Live API Documentation** | `https://ai-link-analysis-l0mt.onrender.com/docs` |
-| **Public GitHub Repository** | `https://github.com/palak-chainani/ai-link-analysis` |
+| Live Demo | https://ai-link-analysis-l0mt.onrender.com |
+| API Documentation (Swagger UI) | https://ai-link-analysis-l0mt.onrender.com/docs |
+| API Endpoint | `POST https://ai-link-analysis-l0mt.onrender.com/link-analysis` |
+| Public GitHub Repository | https://github.com/palak-chainani/ai-link-analysis |
+| Implementation Evidence Log | [docs/demo-log.txt](docs/demo-log.txt) |
 
----
+## Overview
 
-## 1. Summary
+The API accepts a website URL, fetches and cleans the page content, sends the cleaned content to an LLM, and returns a structured JSON response with five analysis sections. The service is designed to avoid invented metrics and to clearly label AI-suggested items where page content does not explicitly provide them.
 
-This application accepts a website URL, fetches and cleans the page content, sends the cleaned content to a Large Language Model (LLM), and returns a structured JSON analysis in five sections. The goal is to turn any business website into actionable **competitor, search-query, SEO, service, and audience intelligence** without inventing data.
+### What the API returns
 
-The service is a single-endpoint FastAPI application. It validates the URL (including SSRF protection), fetches the HTML with strict timeouts, extracts only meaningful text and metadata, builds a focused prompt, asks the LLM for schema-conformant JSON, validates that response, and returns it to the caller. Failures are handled gracefully with clear HTTP error responses.
+| Section | Purpose |
+|---|---|
+| `competitor_analysis` | Brand overview, category, products/services context, competitors, strengths, weaknesses, advantages, and opportunities. |
+| `target_search_queries` | 5 platform-specific search queries (Google, Facebook, Instagram, LinkedIn, X) with intent, relevance, and target audience. |
+| `seo_improvements` | Primary/secondary/long-tail keywords, recommended title, meta description, and supporting content ideas. |
+| `top_services` | Top 5 services with description, target industry, target customer, main benefit, and source label. |
+| `target_audience` | Primary/secondary audiences, industries, business types, customer profiles, location, needs, interests, and segments. |
 
-The repository also documents an independent LLM platform comparison (cost, speed, accuracy, context window, JSON reliability) and a final model recommendation with per-analysis cost estimates.
+## Features
 
----
+- **Single analysis endpoint:** `POST /link-analysis`
+- **URL validation & SSRF protection:** rejects invalid schemes and blocks localhost/private/link-local/reserved addresses before fetching.
+- **Robust website extraction:** fetches HTML with timeout/size/redirect limits and extracts meaningful text from title, meta, headings, body, canonical, and structured data hints.
+- **Content cleaning & token budgeting:** removes noisy content, deduplicates, and caps extracted content before sending to the LLM.
+- **Structured LLM output:** prompts the model for schema-conformant JSON; response is parsed and validated with Pydantic.
+- **Provider fallback/retry:** configurable primary/fallback LLM providers with retry handling for transient/provider/schema failures.
+- **Caching:** in-memory cache keyed by final URL + content fingerprint to reduce repeated LLM cost.
+- **Clear error handling:** returns meaningful 400/422/502/503 errors for validation, fetch, and LLM failures.
+- **Interactive docs:** FastAPI Swagger UI available at `/docs`.
 
-## 2. What the API returns
+## Tech Stack
 
-| # | Section | Purpose |
-|---|---|---|
-| 1 | Competitor vs Your Brand Details | Brand overview, category, products/services, at least 3 reliable competitors, their strengths/gaps, your advantages, and positioning opportunities. |
-| 2 | Top 5 Target Search Queries | Five queries mapped to Google, Facebook, Instagram, LinkedIn and X, each with intent, relevance and audience. No invented search volumes. |
-| 3 | SEO Improvement | Primary/secondary/long-tail keywords, recommended SEO title, meta description, and supporting content ideas. |
-| 4 | Top 5 Services | The five most important services with description, target industry, target customer and main benefit. Inferred items are clearly labelled. |
-| 5 | Target Audience Identification | Primary/secondary audiences, industry segments, business types, customer profiles, geography, needs/challenges, interests, and marketing segments. |
-
-Every insight must be grounded in the submitted website. Anything not directly found on the page is labelled as an AI-generated suggestion.
-
----
-
-## 3. Features
-
-- Single, well-documented REST endpoint on port **4000**
-- URL validation and **SSRF protection** (blocks localhost, private/Loopback/link-local ranges, non-HTTP(S) schemes)
-- Robust fetching: timeouts, redirects, custom user agent, status-code checks, size limits
-- Content extraction from title, meta tags, headings, body text, canonical links and structured data
-- Cleaning pipeline: removes scripts/styles/navigation noise, collapses duplicates, truncates to a token budget
-- LLM integration with **structured JSON output** and Pydantic validation
-- Retry and fallback model strategy for reliability
-- Optional in-memory **cache** keyed by URL + content fingerprint to reduce cost
-- Consistent error handling and human-readable messages
-- Ready for deployment on any ASGI host (Render, Railway, Fly.io, Cloud Run, etc.)
-
----
-
-## 4. Tech stack
-
-| Layer | Choice |
+| Layer | Technology |
 |---|---|
 | API framework | FastAPI |
 | Server | Uvicorn |
-| Data validation | Pydantic v2 |
-| HTTP client | HTTPX (or Requests) |
-| HTML parsing | BeautifulSoup4 (or equivalent) |
-| LLM client | Provider REST APIs via HTTPX (Gemini, OpenAI, Anthropic) — no vendor SDK required |
-| Configuration | Environment variables via `pydantic-settings` and `.env` |
-| Tests | Pytest + FastAPI TestClient |
+| Validation | Pydantic v2 / pydantic-settings |
+| HTTP client | HTTPX |
+| HTML parsing | BeautifulSoup4 |
+| LLM integration | Provider REST APIs via HTTPX (Gemini primary, OpenAI/Anthropic fallback support) |
+| Testing | Pytest |
 
----
-
-## 5. Project structure
+## Project Structure
 
 ```text
-ai-link-analysis/
-│
+.
 ├── app/
-│   ├── main.py                 # FastAPI app, routes, exception handlers
-│   ├── config.py               # Settings loaded from environment
-│   ├── schemas.py              # Request/response Pydantic models
-│   │
+│   ├── main.py                     # FastAPI app, routes, exception handlers
+│   ├── config.py                   # Environment-based settings
+│   ├── schemas.py                  # Request/response and LLM schema models
 │   ├── services/
-│   │   ├── website_extractor.py  # Fetch + HTML extraction + cleaning
-│   │   ├── llm_service.py        # LLM client, prompts, JSON parsing, retry
-│   │   ├── analysis_service.py   # Orchestration of all five sections
-│   │   └── competitor_service.py # Competitor-specific prompt/validation
-│   │
+│   │   ├── analysis_service.py     # End-to-end orchestration + cache
+│   │   ├── website_extractor.py    # Fetch, SSRF-safe flow integration, extraction/cleaning
+│   │   ├── llm_service.py          # Prompting, provider calls, parsing, validation, retries
+│   │   └── competitor_service.py   # Competitor/brand grounding rules
 │   └── utils/
-│       └── validators.py       # URL validation + SSRF checks
-│
+│       └── validators.py           # URL validation and SSRF checks
+├── docs/
+│   └── demo-log.txt                # Sanitized implementation evidence/logs
 ├── tests/
 │   └── test_link_analysis.py
-│
-├── .env.example                # Safe placeholder variables, no secrets
+├── .env.example                    # Placeholder environment variables (no secrets)
 ├── requirements.txt
-└── README.md                   # This file
+└── README.md
 ```
 
----
+## Setup and Execution
 
-## 6. Setup and execution
+### Prerequisites
 
-### 6.1 Prerequisites
+- Python 3.10+ (project tested with Python 3.x; deployed on Render)
+- Git
+- A Gemini API key (recommended primary provider). OpenAI/Anthropic keys are optional fallbacks.
 
-1. Python 3.10 or newer installed and available on the command line.
-2. A Gemini API key (Google AI Studio) and/or an OpenAI API key for the fallback model.
-3. Git and a GitHub account for the public submission repository.
-4. Optional: an account on a hosting platform for the required live demo.
+### 1. Clone and enter the project
 
-### 6.2 Local setup
+```bash
+git clone https://github.com/palak-chainani/ai-link-analysis.git
+cd ai-link-analysis
+```
 
-1. Create the project folder described in Section 5 and initialise it as a Git repository.
-2. Create and activate a Python virtual environment (`venv`) inside the folder.
-3. Install the dependencies listed in `requirements.txt` into that virtual environment.
-4. Copy `.env.example` to `.env` and fill in your API key(s).
-5. Confirm the `.gitignore` file excludes `.env`, virtual-environment folders, caches and compiled files.
-6. Run a quick import check to confirm the app module loads without errors.
+### 2. Create and activate a virtual environment
 
-### 6.3 Environment variables
+**Windows (PowerShell):**
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
-| Variable | Purpose | Default / example |
+**macOS/Linux:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment variables
+
+Copy the example file and fill in your values:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+```bash
+# macOS/Linux
+cp .env.example .env
+```
+
+Edit `.env` and set at least:
+
+```env
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=your-gemini-api-key-here
+GEMINI_MODEL=gemini-3.5-flash-lite
+```
+
+> **Important:** Never commit `.env` or real API keys. Only `.env.example` with placeholders should be committed.
+
+#### Key environment variables
+
+| Variable | Purpose | Default / Example |
 |---|---|---|
-| `LLM_PROVIDER` | Primary provider selector | `gemini` |
-| `GEMINI_API_KEY` | Google AI Studio key | `<your-key>` |
-| `GEMINI_MODEL` | Primary model id | `gemini-3.5-flash-lite` |
-| `OPENAI_API_KEY` | First fallback provider key | `<your-key>` |
-| `FALLBACK_PROVIDER` | First fallback provider | `openai` |
-| `FALLBACK_MODEL` | OpenAI provider model id | `gpt-5-mini` |
-| `ANTHROPIC_API_KEY` | Second fallback provider key | `<your-key>` |
-| `ANTHROPIC_MODEL` | Anthropic provider model id | `claude-haiku-4-5` |
+| `LLM_PROVIDER` | Primary LLM provider | `gemini` |
+| `GEMINI_API_KEY` | Gemini API key | placeholder in `.env.example` |
+| `GEMINI_MODEL` | Gemini model ID | `gemini-3.5-flash-lite` |
+| `OPENAI_API_KEY` | OpenAI fallback key (optional) | placeholder |
+| `FALLBACK_PROVIDER` | Fallback provider | `openai` |
+| `FALLBACK_MODEL` | OpenAI fallback model | `gpt-5-mini` |
+| `ANTHROPIC_API_KEY` | Anthropic fallback key (optional) | placeholder |
+| `ANTHROPIC_MODEL` | Anthropic model ID | `claude-haiku-4-5` |
 | `REQUEST_TIMEOUT_SECONDS` | Website fetch timeout | `10` |
-| `LLM_TIMEOUT_SECONDS` | LLM call timeout | `45` |
-| `MAX_FETCH_BYTES` | Maximum downloaded HTML size | `5000000` |
-| `MAX_CONTENT_TOKENS` | Cleaned content cap sent to the LLM | `15000` |
-| `MAX_URL_LENGTH` / `MAX_REDIRECTS` | URL length and redirect limits | `2048` / `5` |
-| `TEMPERATURE` / `MAX_OUTPUT_TOKENS` | Generation controls | `0.2` / `4000` |
-| `MAX_RETRIES` | Retries per provider before falling back | `1` |
-| `CACHE_TTL_SECONDS` | Cache lifetime per analysed page | `3600` |
-| `LOG_LEVEL` | Logging verbosity | `INFO` |
+| `LLM_TIMEOUT_SECONDS` | LLM request timeout | `45` |
+| `MAX_FETCH_BYTES` | Max HTML bytes fetched | `5000000` |
+| `MAX_CONTENT_TOKENS` | Max extracted content budget | `15000` |
+| `TEMPERATURE` | LLM generation temperature | `0.2` |
+| `MAX_OUTPUT_TOKENS` | LLM output token cap | `4000` |
+| `MAX_RETRIES` | Retries per provider | `1` |
+| `CACHE_TTL_SECONDS` | Cache TTL | `3600` |
+| `LOG_LEVEL` | Logging level | `INFO` |
 
-Never commit real keys. Only commit `.env.example` with placeholders. If no key is configured the app still starts, but `/link-analysis` returns HTTP 503 with `llm_not_configured`.
+### 5. Run the API locally
 
-### 6.4 Run the server
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 4000 --reload
+```
 
-1. From the project root, with the virtual environment active, start Uvicorn pointing at `app.main:app`.
-2. Bind host `0.0.0.0` and port `4000` so it matches the required endpoint.
-3. Open the interactive documentation at `http://localhost:4000/docs` and confirm the `/link-analysis` route is listed.
+The server will start at `http://localhost:4000`.
 
-The exact command: `uvicorn app.main:app --host 0.0.0.0 --port 4000`
+- Swagger UI: `http://localhost:4000/docs`
+- Health check: `http://localhost:4000/health`
 
-### 6.5 Verify
+## API Usage
 
-1. Send the sample request in Section 7.2 from the docs UI or an API client.
-2. Confirm the response has `success: true`, the submitted `website`, and all five analysis keys.
-3. Send an invalid URL and a blocked private URL to confirm graceful error responses.
+### Endpoint
 
----
+`POST /link-analysis`
 
-## 7. API usage
-
-### 7.1 Endpoint
-
-`POST http://localhost:4000/link-analysis`
-
-Request body: a JSON object with a single `url` string.
-
-### 7.2 Sample request
+### Request body
 
 ```json
 {
-  "url": "https://example.com"
+  "url": "https://www.zoho.com"
 }
 ```
 
-### 7.3 Sample response
+### cURL example
+
+```bash
+curl -X POST "http://localhost:4000/link-analysis" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.zoho.com"}'
+```
+
+**PowerShell:**
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:4000/link-analysis" -ContentType "application/json" -Body '{"url":"https://www.zoho.com"}' | ConvertTo-Json -Depth 20
+```
+
+### Sample response (trimmed example)
 
 ```json
 {
   "success": true,
-  "website": "https://example.com",
+  "website": "https://www.zoho.com/",
   "brand": {
-    "name": "ABC Technologies",
-    "category": "Technology Services",
-    "summary": "A technology company providing digital solutions to small and mid-sized businesses."
+    "name": "Zoho",
+    "category": "Cloud Software Suite",
+    "summary": "Zoho offers an end-to-end cloud software suite with 50+ applications covering sales, marketing, finance, HR, and more for businesses of all sizes."
   },
   "analysis": {
     "competitor_analysis": {
-      "brand_name": "ABC Technologies",
-      "brand_category": "Technology Services",
-      "brand_summary": "A technology company providing digital solutions to small businesses.",
-      "brand_overview": "Your brand overview based on the submitted page",
+      "brand_name": "Zoho",
+      "brand_category": "Cloud Software Suite",
       "competitors": [
         {
-          "name": "XYZ Technologies",
-          "main_service": "Web Development",
-          "target_market": "Enterprise",
-          "strengths": ["Established brand", "Broad enterprise client base"],
-          "weaknesses": ["Higher pricing", "Slow delivery cycles"],
+          "name": "Microsoft",
+          "main_service": "Cloud Productivity and Office Suite",
+          "target_market": "Global enterprises and small businesses",
+          "strengths": ["Widespread market adoption"],
+          "weaknesses": ["Complex pricing tiers"],
           "source": "ai_suggestion"
         }
       ],
-      "strengths": ["Affordable solutions"],
-      "weaknesses": ["Limited brand awareness"],
-      "your_advantages": ["Affordable solutions", "Faster turnaround"],
-      "opportunities": ["Improve online visibility", "Publish customer case studies"]
+      "strengths": ["Unified platform with 50+ applications"],
+      "weaknesses": ["High feature volume might require onboarding guidance for new users"],
+      "your_advantages": ["Privacy-focused approach with no ad-based revenue models"],
+      "opportunities": ["Expand messaging on enterprise scalability"]
     },
     "target_search_queries": [
       {
-        "query": "Best web development company",
+        "query": "best cloud software suite for business",
         "platform": "Google",
         "intent": "Service Search",
-        "business_relevance": "Directly matches the core service",
-        "target_audience": "Business owners seeking a vendor"
+        "business_relevance": "Captures high-intent users looking for comprehensive business software solutions.",
+        "target_audience": "Business owners and IT decision makers"
       }
     ],
     "seo_improvements": {
-      "primary_keyword": "web development company",
-      "secondary_keywords": ["website development services", "custom web solutions"],
-      "long_tail_keywords": ["affordable web development for startups"],
-      "recommended_title": "Web Development Company | Affordable Custom Solutions",
-      "meta_description": "Professional web development services for startups and growing businesses.",
-      "supporting_content": ["Service landing pages", "FAQ page", "Industry-specific pages"]
+      "primary_keyword": "cloud software suite",
+      "secondary_keywords": ["business software", "unified platform"],
+      "long_tail_keywords": ["all in one cloud software suite for businesses"],
+      "recommended_title": "Zoho | Cloud Software Suite for Businesses",
+      "meta_description": "A unique and powerful software suite for businesses.",
+      "supporting_content": ["Customer Stories", "Enterprise Solutions"]
     },
     "top_services": [
       {
-        "service_name": "Web Development",
-        "description": "Design and build responsive business websites",
-        "target_industry": "Technology Services",
-        "target_customer": "Small businesses",
-        "main_benefit": "Establishes a professional online presence",
+        "service_name": "Zoho One",
+        "description": "Unified platform with 50+ applications for business operations.",
+        "target_industry": "All Industries",
+        "target_customer": "Startups, mid-sized companies, and enterprises",
+        "main_benefit": "Runs the entire business on a single platform.",
         "source": "website_content"
       }
     ],
     "target_audience": {
-      "primary_audience": ["Small business owners"],
-      "secondary_audience": ["Startups"],
-      "industries": ["Technology", "Retail"],
-      "business_types": ["SMB", "Startup"],
-      "customer_profiles": ["Owner seeking growth"],
-      "location": "Not specified on site",
-      "customer_needs": ["Affordable digital presence"],
-      "interests": ["Website design", "Online visibility"],
-      "recommended_segments": ["Local service businesses", "Early-stage startups"]
+      "primary_audience": ["Startups", "Mid-sized companies", "Enterprises"],
+      "secondary_audience": ["Business owners", "CEOs"],
+      "industries": ["Sales and Marketing", "Finance", "Human Resources"],
+      "business_types": ["Growing organizations", "Global enterprises"],
+      "customer_profiles": ["Startup founders", "IT decision makers"],
+      "location": "Global with specific regional focus mentioned for India and UAE",
+      "customer_needs": ["End-to-end business software coverage", "Data privacy and security"],
+      "interests": ["Cloud technology innovation", "Business growth"],
+      "recommended_segments": ["Enterprise software buyers", "SME owners seeking all-in-one platforms"]
     }
   }
 }
 ```
 
-> The example above is illustrative and shortened. Real responses must contain five queries, five services, at least three competitors where reliable information exists, and fully populated fields.
+> The full live response includes 5 search queries (one per required platform), 5 services, and at least 3 competitors when category context is clear. See [docs/demo-log.txt](docs/demo-log.txt) for a complete sanitized captured response.
 
-### 7.4 Error responses
+### Error responses
 
-| Situation | HTTP status | Behaviour |
-|---|---|---|
-| Missing or malformed `url` | 422 | Pydantic validation error from FastAPI |
-| Invalid URL format or disallowed scheme | 400 | Clear message explaining the URL problem |
-| Private/internal address (SSRF) | 400 | Request rejected before any network call |
-| Website unreachable, timeout, 4xx/5xx | 502 | Graceful message; no partial analysis returned |
-| LLM provider failure after retries | 503 | Message indicating analysis is temporarily unavailable |
-| LLM response fails schema validation | 503 | Fallback model attempted first, then a clear error |
+| Situation | Status | Typical code/behavior |
+|---|---:|---|
+| Invalid/malformed URL or blocked private/local address | 400 | URL validation / SSRF protection error |
+| No analysable content extracted | 422 | `no_analysable_content` |
+| Website fetch failure / timeout / upstream HTTP error | 502 | Fetch-related error |
+| LLM not configured / provider failure / invalid LLM output after retries | 503 | LLM configuration or analysis unavailable error |
+| Unexpected server error | 500 | Generic internal error (traceback logged server-side) |
 
----
+## Implementation Evidence (Logs)
 
-## 8. Testing
+Sanitized execution evidence is included in [`docs/demo-log.txt`](docs/demo-log.txt). It contains:
 
-1. Run the suite from the project root: `python -m pytest -q`. The current suite has 18 passing tests.
-2. Coverage includes: valid URL happy path, invalid URL, private IP rejection, redirect-to-private rejection, fetch timeout, no-content pages, LLM failure mapping, cache reuse, and response schema completeness.
-3. No real API keys or network calls are required — external clients are mocked.
-4. Capture a short log or screenshot of a successful request and the `/docs` page for the submission.
+- `python -m pytest -q` result (`18 passed`)
+- `GET /health` response
+- `GET /docs` verification (Swagger/OpenAPI markers present)
+- Successful `POST /link-analysis` request and full sanitized JSON response
 
----
+### Quick evidence excerpt
 
-## 9. LLM platform comparison and final recommendation
+```text
+## Pytest
+Command: python -m pytest -q
+..................                                                       [100%]
+18 passed in 1.02s
 
-> Prices below are **list prices per 1 million tokens checked in November 2026**. They are estimates for planning and must be re-verified against each provider's official pricing page before final submission. Response times and accuracy ratings are **estimates**, not measured benchmarks.
+## Health check
+Status: 200
+{"status":"ok","service":"link-analysis"}
 
-### 9.1 Comparison table
+## API docs verification
+Status: 200
+Contains Swagger/OpenAPI UI markers: True
+```
 
-| Provider | Model | Input $/1M | Output $/1M | Cached input $/1M | Context window | Structured JSON support | Est. speed | Est. accuracy for this task | Recommendation |
-|---|---|---:|---:|---:|---|---|---|---|---|
-| Google | Gemini 3.5 Flash-Lite | $0.30 | $2.50 | $0.03 | 1,048,576 | Native JSON mode / schema output | Fast (~2–5 s) | Good extraction, adequate insight | **Primary choice** |
-| Google | Gemini 2.5 Flash | $0.30 | $2.50 | $0.03 | 1,048,576 | Native JSON mode / schema output | Fast (~2–5 s) | Better reasoning | Strong upgrade option |
-| OpenAI | GPT-5 mini | $0.25 | $2.00 | $0.025 | Large (~400k*) | Strict Structured Outputs | Moderate (~3–6 s) | Strong reasoning | **Fallback choice** |
-| OpenAI | GPT-4.1 mini | $0.40 | $1.60 | $0.10 | ~1,047,576* | Strict Structured Outputs | Fast (~2–5 s) | Strong | Alternative with 1M context |
-| Anthropic | Claude Haiku 5.5 | $0.10 | $0.50 | — | 200,000* | JSON via tool use / prompting | Moderate (~2–5 s) | Good | Viable second fallback |
+## LLM Platform Comparison and Final Recommendation
 
-\* Context figures marked with an asterisk should be confirmed in the provider's current model documentation.
+> Pricing/context/speed figures below are planning estimates checked against public provider pricing/model documentation in November 2026 and should be re-verified before production procurement decisions. Latency and quality observations are workload-dependent.
 
-### 9.2 Best model selection
+### Comparison table
 
-Selection is based on the brief's six criteria:
+| Provider | Model | Est. Input $/1M | Est. Output $/1M | Context Window | Structured JSON Support | Est. Speed | Fit for this task | Notes |
+|---|---|---:|---:|---:|---|---|---|---|
+| Google | Gemini 3.5 Flash-Lite | $0.30 | $2.50 | ~1M | Native JSON/schema-oriented output | Fast | **Primary** | Best balance of cost, speed, large context, and reliable structured extraction. |
+| Google | Gemini 2.5 Flash | $0.30 | $2.50 | ~1M | Native JSON/schema-oriented output | Fast | Strong upgrade | Better reasoning in some cases; similar cost class. |
+| OpenAI | GPT-5 mini | $0.25 | $2.00 | Large (verify current docs) | Strong structured outputs/JSON mode support | Moderate | **Fallback** | Good reasoning and JSON reliability; useful when Gemini fails. |
+| OpenAI | GPT-4.1 mini | $0.40 | $1.60 | ~1M (verify) | Strong structured outputs | Fast/Moderate | Alternative | Higher input cost than GPT-5 mini in many cases. |
+| Anthropic | Claude Haiku 4.5 | $0.10 | $0.50 | ~200k (verify) | Tool/JSON prompting patterns | Moderate | Second fallback | Very cost-effective, but smaller context and different schema strategy. |
 
-1. **Accuracy in understanding website content** — Gemini 3.5 Flash-Lite is adequate for extraction and keyword/service identification; the Gemini Flash family follows consistent instruction-following conventions. The older 2.5 Flash-Lite id is no longer available to new API users.
-2. **Response speed** — Flash-Lite is optimised for low latency, which matters because the API is interactive.
-3. **Low API cost** — it is the cheapest option among the compared models with a 1M-token context.
-4. **Reliable structured JSON generation** — Gemini supports JSON response configuration and schema-constrained output; Pydantic validation is still applied on our side.
-5. **Relevant competitor and SEO insight** — quality is sufficient when the prompt includes explicit field definitions and grounding rules.
-6. **Large content handling** — the ~1M token context lets the full cleaned page fit in a single call, avoiding chunking and repeated calls.
-
-### 9.3 Cost optimization
-
-1. Strip HTML, scripts, styles, cookies banners, navigation and duplicate boilerplate before sending content.
-2. Send only the meaningful text blocks: title, meta description, headings, main body, and product/service sections.
-3. Deduplicate repeated sentences and truncate to the configured token cap (default 15,000 tokens).
-4. Keep the system prompt short but explicit; put field rules in the schema rather than long prose.
-5. Use one LLM call for all five sections instead of five separate calls.
-6. Route simple extraction work (if split) to the cheaper model and reserve stronger models for insight synthesis.
-7. Cache results by URL + content fingerprint so an unchanged page is not re-analysed.
-8. Retry at most once with the primary model, then fall back; avoid unbounded retry loops.
-9. Log token usage per request and alert on anomalous growth.
-
-### 9.4 Final LLM recommendation
+### Final recommendation
 
 | Item | Recommendation |
 |---|---|
-| Provider | Google |
-| Model | `gemini-3.5-flash-lite` |
-| Estimated input tokens per analysis | ~12,000 (cleaned page ~9,000 + prompt ~3,000) |
-| Estimated output tokens per analysis | ~3,500 (five populated sections) |
-| Estimated API cost per analysis | ~$0.0124 (12k × $0.30/M + 3.5k × $2.50/M) |
-| Expected response time | ~2–4 s end-to-end estimate (fetch + LLM) |
-| Reason for selection | Lowest cost, very large context, fast, native structured JSON, adequate insight quality for this use case |
-| Alternative / fallback | OpenAI `gpt-5-mini` (~$0.010 per analysis) on schema failure or provider error |
-| Second fallback | Anthropic `claude-haiku-5.5` if both primary and first fallback are unavailable |
-| Balancing approach | Clean + cap content, single call, schema validation, one retry, then fallback, with caching to avoid repeat spend |
+| **Primary provider/model** | Google Gemini (`gemini-3.5-flash-lite`) |
+| **Fallback provider/model** | OpenAI (`gpt-5-mini`) via `FALLBACK_PROVIDER=openai` |
+| **Why** | Gemini 3.5 Flash-Lite provides a strong cost/latency/context balance for single-call, schema-validated website analysis. |
+| **Estimated token usage per analysis** | ~12,000 input tokens + ~3,500 output tokens (estimate; varies by site size/content) |
+| **Estimated cost per analysis** | ~\$0.0124 (12k × $0.30/M + 3.5k × $2.50/M), excluding network/hosting overhead |
+| **Expected response time** | ~2–6s typical end-to-end (fetch + LLM), depending on target site and model latency |
 
-**Measured sample (not a benchmark):** on 21 Nov 2026, one live run against `https://www.zoho.com` returned a valid five-section response using 2,678 input tokens and 2,009 output tokens in ~7 s end-to-end. This is a single observation; the cost figures above remain estimates.
+### Cost / reliability optimizations used
 
----
+- Clean and trim HTML before LLM call (remove scripts/styles/nav/noise).
+- Cap extracted content (`MAX_CONTENT_TOKENS`) to control prompt size.
+- Use **one LLM call** for all five sections.
+- Validate response with Pydantic + custom constraints; retry/fallback on invalid output.
+- Cache results by URL + content fingerprint (`CACHE_TTL_SECONDS`).
+- Configure timeouts/retries via environment variables.
 
-## 10. Security
+## Testing
 
-- API keys are read only from environment variables and never logged or returned.
-- `.env` is git-ignored; only `.env.example` is committed.
-- URL validation rejects non-HTTP(S) schemes and resolves hostnames to block private, loopback, link-local and reserved IP ranges before fetching (SSRF protection).
-- Fetch size and timeouts are bounded to prevent resource exhaustion.
-- Error messages are informative but do not leak provider credentials or internal stack traces.
+Run the test suite from the project root:
 
----
+```bash
+python -m pytest -q
+```
 
-## 11. Application verification & deployment
+Current local evidence: **18 passed** (see [docs/demo-log.txt](docs/demo-log.txt)).
 
-As part of the submission process, complete these verification steps:
+The tests cover key behaviors including URL validation/SSRF protection, fetch/content handling, LLM failure mapping, cache behavior, and response schema completeness using mocked external dependencies (no real API keys required).
 
-1. **Follow Dxora Technologies on LinkedIn:** https://www.linkedin.com/company/dxora-technologies
-2. **Follow CREST on Instagram:** https://www.instagram.com/crestspot/
-3. **Share your own LinkedIn and Instagram profile links** in the final submission email for verification.
+## Deployment Notes
 
-### Deployment
+The project is deployed as a FastAPI ASGI app (Render). For deployment:
 
-1. Push the finished repository to GitHub and set it to **Public**.
-2. Deploy the FastAPI app to a publicly accessible ASGI host (this project is deployed on Render).
-3. Set all environment variables in the hosting dashboard (never in source files). For Render, update **Service → Environment** (e.g. `GEMINI_MODEL`, `GEMINI_API_KEY`) and redeploy after changes.
-4. Confirm the live endpoint `POST /link-analysis` returns structured JSON for a sample URL.
-5. Share the live demo URL and the `/docs` link for testing/validation.
+1. Set environment variables in the hosting platform dashboard (do not commit `.env`).
+2. Use a start command such as `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+3. Verify `/health`, `/docs`, and `POST /link-analysis` after deploy.
+4. After changing env vars on Render, save/redeploy so the running process picks them up.
 
-| Requirement | Link |
-|---|---|
-| Live Demo | https://ai-link-analysis-l0mt.onrender.com |
-| API Endpoint | https://ai-link-analysis-l0mt.onrender.com/link-analysis |
-| API Documentation | https://ai-link-analysis-l0mt.onrender.com/docs |
-| Public GitHub Repository | https://github.com/palak-chainani/ai-link-analysis |
+## Security Notes
 
----
-
-## 12. Submission checklist
-
-- [ ] Complete Python source code uploaded to GitHub
-- [ ] Repository is **Public**
-- [ ] `README.md` includes setup and execution instructions
-- [ ] `README.md` includes sample API request and response
-- [x] Screenshots or logs demonstrating the implementation are included — see [`docs/demo-log.txt`](docs/demo-log.txt)
-- [x] LLM comparison and final recommendation are included — see [Section 9](#9-llm-platform-comparison-and-final-recommendation)
-- [x] No API keys, passwords or credentials committed (`.env` is gitignored; `.env.example` contains placeholders only)
-- [x] `.env.example` present with placeholder values
-- [x] Tests included and passing (`python -m pytest -q` → 18 passed)
-- [x] Application deployed with a working live demo URL
-- [x] `/docs` link shared for testing: https://ai-link-analysis-l0mt.onrender.com/docs
-- [ ] Verified follow of Dxora Technologies on LinkedIn and CREST on Instagram (manual action)
-- [ ] LinkedIn and Instagram profile links prepared for verification (manual action)
-
----
-
-## 13. Final submission email
-
-**To:** hr@chivoxai.com  
-**Subject:** `<Your Name> - Python Practical Link Analysis test review`
-
-**Body:**
-
-1. **Full Name:** `<Your Full Name>`
-2. **Demo Link:** https://ai-link-analysis-l0mt.onrender.com
-3. **API Documentation:** https://ai-link-analysis-l0mt.onrender.com/docs
-4. **API Endpoint:** https://ai-link-analysis-l0mt.onrender.com/link-analysis
-5. **Public GitHub Repository Link:** https://github.com/palak-chainani/ai-link-analysis
-6. **Contact Number:** `<Your Contact Number>`
-7. **Current Location:** `<Your Current Location>`
-8. **Preferred Date and Time for Final Discussion:** `<Preferred Date and Time>`
-9. **LinkedIn Profile Link (for verification):** `<Your LinkedIn Profile URL>`
-10. **Instagram Profile Link (for verification):** `<Your Instagram Profile URL>`
-
----
-
-## 14. Verification steps
-
-1. Follow Dxora Technologies on LinkedIn: https://www.linkedin.com/company/dxora-technologies
-2. Follow CREST on Instagram: https://www.instagram.com/crestspot/
-3. Deploy the FastAPI application on a publicly accessible server and confirm the live API returns the expected structured JSON response.
-4. Share your LinkedIn and Instagram profile links in the final submission email for verification.
-
----
-
-## 15. Reference
-
-All requirements are taken from the practical test brief, including the five analysis sections, technical requirements, evaluation criteria (100 marks), LLM research expectations, submission instructions and panel interview topics.
+- API keys are loaded from environment variables only; never hardcode or log secrets.
+- `.env` is ignored by git; `.env.example` contains placeholders only.
+- SSRF protections block localhost/private/reserved network targets before fetching.
+- Fetch size, redirects, and timeouts are bounded.
+- Error responses avoid leaking credentials or internal stack traces.
