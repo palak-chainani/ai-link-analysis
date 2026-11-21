@@ -1,7 +1,7 @@
 # AI-Powered Website Link Analysis API
 
 > **Submission README** — Python Practical Test (FastAPI + LLM)
-> Source brief: `link-analysis.md` · Maximum duration: 2 hours · Submission: public GitHub repository + deployed live demo
+> Maximum duration: 2 hours · Submission: public GitHub repository + deployed live demo
 
 | Details | Information |
 |---|---|
@@ -93,8 +93,6 @@ ai-link-analysis/
 ├── requirements.txt
 └── README.md                   # This file
 ```
-
-A deeper, task-by-task build plan is maintained in **`IMPLEMENTATION_GUIDE.md`**.
 
 ---
 
@@ -396,4 +394,4 @@ Selection is based on the brief's six criteria:
 
 ## 15. Reference
 
-All requirements are taken from `link-analysis.md`, including the five analysis sections, technical requirements, evaluation criteria (100 marks), LLM research expectations, submission instructions and panel interview topics. See `IMPLEMENTATION_GUIDE.md` for the complete task-by-task build plan.
+All requirements are taken from the practical test brief, including the five analysis sections, technical requirements, evaluation criteria (100 marks), LLM research expectations, submission instructions and panel interview topics.
