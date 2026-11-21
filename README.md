@@ -6,7 +6,7 @@
 | Details | Information |
 |---|---|
 | **Technology** | Python 3.x, FastAPI, Uvicorn, Pydantic, HTTPX, BeautifulSoup |
-| **AI Integration** | Google Gemini 2.5 Flash-Lite (primary) · OpenAI GPT-5 mini (fallback) |
+| **AI Integration** | Google Gemini 3.5 Flash-Lite (primary) · OpenAI GPT-5 mini (fallback) |
 | **Endpoint** | `POST http://localhost:4000/link-analysis` |
 | **API Documentation** | `http://localhost:4000/docs` |
 | **Submission** | Public GitHub Repository + live deployed endpoint |
@@ -120,7 +120,7 @@ ai-link-analysis/
 |---|---|---|
 | `LLM_PROVIDER` | Primary provider selector | `gemini` |
 | `GEMINI_API_KEY` | Google AI Studio key | `<your-key>` |
-| `GEMINI_MODEL` | Primary model id | `gemini-2.5-flash-lite` |
+| `GEMINI_MODEL` | Primary model id | `gemini-3.5-flash-lite` |
 | `OPENAI_API_KEY` | First fallback provider key | `<your-key>` |
 | `FALLBACK_PROVIDER` | First fallback provider | `openai` |
 | `FALLBACK_MODEL` | OpenAI provider model id | `gpt-5-mini` |
@@ -276,7 +276,7 @@ Request body: a JSON object with a single `url` string.
 
 | Provider | Model | Input $/1M | Output $/1M | Cached input $/1M | Context window | Structured JSON support | Est. speed | Est. accuracy for this task | Recommendation |
 |---|---|---:|---:|---:|---|---|---|---|---|
-| Google | Gemini 2.5 Flash-Lite | $0.10 | $0.40 | $0.01 | 1,048,576 | Native JSON mode / schema output | Very fast (~1–3 s) | Good extraction, adequate insight | **Primary choice** |
+| Google | Gemini 3.5 Flash-Lite | $0.30 | $2.50 | $0.03 | 1,048,576 | Native JSON mode / schema output | Fast (~2–5 s) | Good extraction, adequate insight | **Primary choice** |
 | Google | Gemini 2.5 Flash | $0.30 | $2.50 | $0.03 | 1,048,576 | Native JSON mode / schema output | Fast (~2–5 s) | Better reasoning | Strong upgrade option |
 | OpenAI | GPT-5 mini | $0.25 | $2.00 | $0.025 | Large (~400k*) | Strict Structured Outputs | Moderate (~3–6 s) | Strong reasoning | **Fallback choice** |
 | OpenAI | GPT-4.1 mini | $0.40 | $1.60 | $0.10 | ~1,047,576* | Strict Structured Outputs | Fast (~2–5 s) | Strong | Alternative with 1M context |
@@ -288,7 +288,7 @@ Request body: a JSON object with a single `url` string.
 
 Selection is based on the brief's six criteria:
 
-1. **Accuracy in understanding website content** — Gemini 2.5 Flash-Lite is adequate for extraction and keyword/service identification; the versioned Gemini family follows the same instruction-following conventions as larger Flash models.
+1. **Accuracy in understanding website content** — Gemini 3.5 Flash-Lite is adequate for extraction and keyword/service identification; the Gemini Flash family follows consistent instruction-following conventions. The older 2.5 Flash-Lite id is no longer available to new API users.
 2. **Response speed** — Flash-Lite is optimised for low latency, which matters because the API is interactive.
 3. **Low API cost** — it is the cheapest option among the compared models with a 1M-token context.
 4. **Reliable structured JSON generation** — Gemini supports JSON response configuration and schema-constrained output; Pydantic validation is still applied on our side.
@@ -312,15 +312,17 @@ Selection is based on the brief's six criteria:
 | Item | Recommendation |
 |---|---|
 | Provider | Google |
-| Model | `gemini-2.5-flash-lite` |
+| Model | `gemini-3.5-flash-lite` |
 | Estimated input tokens per analysis | ~12,000 (cleaned page ~9,000 + prompt ~3,000) |
 | Estimated output tokens per analysis | ~3,500 (five populated sections) |
-| Estimated API cost per analysis | ~$0.0026 (12k × $0.10/M + 3.5k × $0.40/M) |
+| Estimated API cost per analysis | ~$0.0124 (12k × $0.30/M + 3.5k × $2.50/M) |
 | Expected response time | ~2–4 s end-to-end estimate (fetch + LLM) |
 | Reason for selection | Lowest cost, very large context, fast, native structured JSON, adequate insight quality for this use case |
 | Alternative / fallback | OpenAI `gpt-5-mini` (~$0.010 per analysis) on schema failure or provider error |
 | Second fallback | Anthropic `claude-haiku-5.5` if both primary and first fallback are unavailable |
 | Balancing approach | Clean + cap content, single call, schema validation, one retry, then fallback, with caching to avoid repeat spend |
+
+**Measured sample (not a benchmark):** on 21 Nov 2026, one live run against `https://www.zoho.com` returned a valid five-section response using 2,678 input tokens and 2,009 output tokens in ~7 s end-to-end. This is a single observation; the cost figures above remain estimates.
 
 ---
 

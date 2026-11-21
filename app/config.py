@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
 
     # Model identifiers
-    gemini_model: str = "gemini-2.5-flash-lite"
+    gemini_model: str = "gemini-3.5-flash-lite"
     fallback_model: str = "gpt-5-mini"  # model id used for the OpenAI provider
     anthropic_model: str = "claude-haiku-4-5"
 

@@ -199,8 +199,11 @@ async def _call_gemini(
         },
     }
     try:
+        # Send the key as a header so it never appears in logged request URLs.
         async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
-            response = await client.post(url, params={"key": key}, json=payload)
+            response = await client.post(
+                url, headers={"x-goog-api-key": key}, json=payload
+            )
     except httpx.RequestError as exc:
         raise LLMProviderError("Gemini request failed") from exc
 

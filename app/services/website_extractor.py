@@ -265,9 +265,16 @@ def extract_page_data(html: str, final_url: str, settings: Settings) -> PageData
     for tag in soup.find_all(["script", "style", "noscript", "iframe", "svg", "canvas", "form"]):
         tag.decompose()
     for tag in list(soup.find_all(True)):
+        # A parent may already have been decomposed, which detaches its children
+        # and sets attrs to None. Those tags must be skipped safely.
+        if tag.attrs is None:
+            continue
+        classes = tag.get("class") or []
+        if not isinstance(classes, list):
+            classes = [str(classes)]
         attributes = " ".join(
             [
-                " ".join(tag.get("class", []) if isinstance(tag.get("class", []), list) else []),
+                " ".join(str(item) for item in classes),
                 str(tag.get("id", "")),
                 str(tag.get("role", "")),
             ]
