@@ -1,15 +1,18 @@
 # AI-Powered Website Link Analysis API
 
 > **Submission README** — Python Practical Test (FastAPI + LLM)
-> Maximum duration: 2 hours · Submission: public GitHub repository + deployed live demo
+> Maximum duration: 2 hours · Submission deadline: 27 November 2026 · Submission: public GitHub repository + deployed live demo
 
 | Details | Information |
 |---|---|
 | **Technology** | Python 3.x, FastAPI, Uvicorn, Pydantic, HTTPX, BeautifulSoup |
 | **AI Integration** | Google Gemini 3.5 Flash-Lite (primary) · OpenAI GPT-5 mini (fallback) |
-| **Endpoint** | `POST http://localhost:4000/link-analysis` |
-| **API Documentation** | `http://localhost:4000/docs` |
-| **Submission** | Public GitHub Repository + live deployed endpoint |
+| **Local Endpoint** | `POST http://localhost:4000/link-analysis` |
+| **Local API Docs** | `http://localhost:4000/docs` |
+| **Live Demo** | `https://ai-link-analysis-l0mt.onrender.com` |
+| **Live API Endpoint** | `POST https://ai-link-analysis-l0mt.onrender.com/link-analysis` |
+| **Live API Documentation** | `https://ai-link-analysis-l0mt.onrender.com/docs` |
+| **Public GitHub Repository** | `https://github.com/palak-chainani/ai-link-analysis` |
 
 ---
 
@@ -336,19 +339,28 @@ Selection is based on the brief's six criteria:
 
 ---
 
-## 11. Deployment
+## 11. Application verification & deployment
+
+As part of the submission process, complete these verification steps:
+
+1. **Follow Dxora Technologies on LinkedIn:** https://www.linkedin.com/company/dxora-technologies
+2. **Follow CREST on Instagram:** https://www.instagram.com/crestspot/
+3. **Share your own LinkedIn and Instagram profile links** in the final submission email for verification.
+
+### Deployment
 
 1. Push the finished repository to GitHub and set it to **Public**.
-2. Deploy the FastAPI app to a publicly accessible ASGI host.
-3. Set all environment variables in the hosting dashboard (never in source files).
+2. Deploy the FastAPI app to a publicly accessible ASGI host (this project is deployed on Render).
+3. Set all environment variables in the hosting dashboard (never in source files). For Render, update **Service → Environment** (e.g. `GEMINI_MODEL`, `GEMINI_API_KEY`) and redeploy after changes.
 4. Confirm the live endpoint `POST /link-analysis` returns structured JSON for a sample URL.
-5. Record the following links for submission:
+5. Share the live demo URL and the `/docs` link for testing/validation.
 
-| Requirement | Value |
+| Requirement | Link |
 |---|---|
-| Live Demo | `<your-domain>` |
-| API Endpoint | `<your-domain>/link-analysis` |
-| API Documentation | `<your-domain>/docs` |
+| Live Demo | https://ai-link-analysis-l0mt.onrender.com |
+| API Endpoint | https://ai-link-analysis-l0mt.onrender.com/link-analysis |
+| API Documentation | https://ai-link-analysis-l0mt.onrender.com/docs |
+| Public GitHub Repository | https://github.com/palak-chainani/ai-link-analysis |
 
 ---
 
@@ -358,31 +370,35 @@ Selection is based on the brief's six criteria:
 - [ ] Repository is **Public**
 - [ ] `README.md` includes setup and execution instructions
 - [ ] `README.md` includes sample API request and response
-- [ ] Screenshots or logs demonstrating the implementation are included
-- [ ] LLM comparison and final recommendation are included
-- [ ] No API keys, passwords or credentials committed
-- [ ] `.env.example` present with placeholder values
-- [ ] Tests included and passing
-- [ ] Application deployed with a working live demo URL
-- [ ] `/docs` link shared for testing
-- [ ] Verified follow of Dxora Technologies on LinkedIn and CREST on Instagram
-- [ ] LinkedIn and Instagram profile links prepared for verification
+- [x] Screenshots or logs demonstrating the implementation are included — see [`docs/demo-log.txt`](docs/demo-log.txt)
+- [x] LLM comparison and final recommendation are included — see [Section 9](#9-llm-platform-comparison-and-final-recommendation)
+- [x] No API keys, passwords or credentials committed (`.env` is gitignored; `.env.example` contains placeholders only)
+- [x] `.env.example` present with placeholder values
+- [x] Tests included and passing (`python -m pytest -q` → 18 passed)
+- [x] Application deployed with a working live demo URL
+- [x] `/docs` link shared for testing: https://ai-link-analysis-l0mt.onrender.com/docs
+- [ ] Verified follow of Dxora Technologies on LinkedIn and CREST on Instagram (manual action)
+- [ ] LinkedIn and Instagram profile links prepared for verification (manual action)
 
 ---
 
 ## 13. Final submission email
 
-**To:** hr@chivoxai.com
+**To:** hr@chivoxai.com  
 **Subject:** `<Your Name> - Python Practical Link Analysis test review`
 
 **Body:**
 
-1. Full Name
-2. Demo Link
-3. Public GitHub Repository Link
-4. Contact Number
-5. Current Location
-6. Preferred Date and Time for Final Discussion
+1. **Full Name:** `<Your Full Name>`
+2. **Demo Link:** https://ai-link-analysis-l0mt.onrender.com
+3. **API Documentation:** https://ai-link-analysis-l0mt.onrender.com/docs
+4. **API Endpoint:** https://ai-link-analysis-l0mt.onrender.com/link-analysis
+5. **Public GitHub Repository Link:** https://github.com/palak-chainani/ai-link-analysis
+6. **Contact Number:** `<Your Contact Number>`
+7. **Current Location:** `<Your Current Location>`
+8. **Preferred Date and Time for Final Discussion:** `<Preferred Date and Time>`
+9. **LinkedIn Profile Link (for verification):** `<Your LinkedIn Profile URL>`
+10. **Instagram Profile Link (for verification):** `<Your Instagram Profile URL>`
 
 ---
 
@@ -390,7 +406,8 @@ Selection is based on the brief's six criteria:
 
 1. Follow Dxora Technologies on LinkedIn: https://www.linkedin.com/company/dxora-technologies
 2. Follow CREST on Instagram: https://www.instagram.com/crestspot/
-3. Share your own LinkedIn and Instagram profile links in the final email.
+3. Deploy the FastAPI application on a publicly accessible server and confirm the live API returns the expected structured JSON response.
+4. Share your LinkedIn and Instagram profile links in the final submission email for verification.
 
 ---
 

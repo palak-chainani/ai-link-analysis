@@ -1,0 +1,120 @@
+﻿# Demo / Evidence Log
+Generated: 2026-11-21T22:21:27.778385Z
+All outputs sanitized; no API keys or credentials included.
+
+## 1) Pytest
+Command: python -m pytest -q
+```text
+..................                                                       [100%]
+18 passed in 1.02s
+```
+
+## 2) Health check
+Command: curl http://localhost:4000/health
+Status: 200
+```json
+{"status":"ok","service":"link-analysis"}
+```
+
+## 3) API docs verification
+Command: GET /docs
+Status: 200
+Contains Swagger/OpenAPI UI markers: True
+
+## 4) POST /link-analysis sample
+Request:
+```json
+{
+  "url": "https://www.zoho.com"
+}
+```
+Status: 200
+Response (truncated for readability where needed):
+```json
+{
+  "success": true,
+  "website": "https://www.zoho.com/",
+  "brand": {
+    "name": "Zoho",
+    "category": "Cloud Software Suite",
+    "summary": "Zoho offers an end-to-end cloud software suite with 50+ applications covering sales, marketing, finance, HR, and more for businesses of all sizes."
+  },
+  "analysis": {
+    "competitor_analysis": {
+      "brand_name": "Zoho",
+      "brand_category": "Cloud Software Suite",
+      "brand_summary": "Zoho offers an end-to-end cloud software suite with 50+ applications covering sales, marketing, finance, HR, and more for businesses of all sizes.",
+      "brand_overview": "A unified platform trusted by millions of businesses worldwide, providing secure, high-performance cloud services and business software solutions.",
+      "competitors": [
+        {
+          "name": "Microsoft",
+          "main_service": "Cloud Productivity and Office Suite",
+          "target_market": "Global enterprises and small businesses",
+          "strengths": [
+            "Widespread market adoption",
+            "Comprehensive ecosystem of office tools"
+          ],
+          "weaknesses": [
+            "Complex pricing tiers",
+            "Higher overall cost for small businesses"
+          ],
+          "source": "ai_suggestion"
+        },
+        {
+          "name": "Google Workspace",
+          "main_service": "Cloud Collaboration and Productivity Tools",
+          "target_market": "Businesses of all sizes",
+          "strengths": [
+            "Strong real-time collaboration",
+            "User-friendly interface"
+          ],
+          "weaknesses": [
+            "Less integrated operational suite compared to 50+ apps",
+            "Limited native advanced enterprise resource planning"
+          ],
+          "source": "ai_suggestion"
+        },
+        {
+          "name": "Salesforce",
+          "main_service": "Customer Relationship Management",
+          "target_market": "Mid-market to large enterprises",
+          "strengths": [
+            "Market leader in CRM",
+            "Extensive app exchange marketplace"
+          ],
+          "weaknesses": [
+            "Steep learning curve",
+            "Expensive implementation and maintenance"
+          ],
+          "source": "ai_suggestion"
+        }
+      ],
+      "strengths": [
+        "Unified platform with 50+ applications",
+        "Customer-first philosophy with no advertising-based business model",
+        "Relentless investments in R&D and ownership of the entire technology stack"
+      ],
+      "weaknesses": [
+        "Could expand explicit case study disclosures on the main landing page",
+        "High feature volume might require onboarding guidance for new users"
+      ],
+      "your_advantages": [
+        "Affordable pricing starting per user per month for an all-in-one suite",
+        "Privacy-focused approach with no data selling or ad-based revenue models",
+        "Owns the entire technology stack including global data centers"
+      ],
+      "opportunities": [
+        "Highlight growing regional hubs like the UAE and India to build localized trust",
+        "Expand messaging on enterprise scalability for large organizations"
+      ]
+    },
+    "target_search_queries": [
+      {
+        "query": "best cloud software suite for business",
+        "platform": "Google",
+        "intent": "Service Search",
+        "business_relevance": "Captures high-intent users looking for comprehensive business software solutions.",
+        "target_audience": "Business owners and IT decision makers"
+      },
+      {
+        "query": "all in one business operating system software",
